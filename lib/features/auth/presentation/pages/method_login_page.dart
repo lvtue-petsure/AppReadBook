@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/presentation/pages/login_page.dart';
+import 'package:my_app/features/auth/presentation/pages/register_page.dart';
+import 'package:my_app/features/auth/presentation/pages/login_google_page.dart';
 
 class MethodLoginPage extends StatefulWidget {
   const MethodLoginPage({super.key});
@@ -33,7 +35,7 @@ class _MethodLoginPageState extends State<MethodLoginPage> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                          MaterialPageRoute(builder: (context) => LoginGooglePage()),
                         );
                       },
                       child: const Text("Google"),
@@ -69,7 +71,10 @@ class _MethodLoginPageState extends State<MethodLoginPage> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        // TODO: chuyển sang register
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        );
                       },
                       child: const Text("Chưa có tài khoản? Đăng ký"),
                     )
