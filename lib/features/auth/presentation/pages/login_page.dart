@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:my_app/features/auth/presentation/pages/register_page.dart';
+import 'package:my_app/features/homepage/home_page.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -15,6 +16,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
    void _login() {
+     Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       // TODO: gọi API login qua auth repository
@@ -81,7 +86,10 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        // TODO: chuyển sang register
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        );
                       },
                       child: const Text("Chưa có tài khoản? Đăng ký"),
                     )

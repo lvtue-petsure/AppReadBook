@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LoginGooglePage extends StatefulWidget {
   @override
@@ -7,8 +8,19 @@ class LoginGooglePage extends StatefulWidget {
 }
 
 class _AppScreenState extends State<LoginGooglePage> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  late GoogleSignIn _googleSignIn;
   GoogleSignInAccount? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _googleSignIn = kIsWeb
+        ? GoogleSignIn(
+            clientId: '51223296662-ne0gbne5a20n4rtenpj6und3i4u077m8.apps.googleusercontent.com',
+            scopes: ['email', 'profile'],
+          )
+        : GoogleSignIn(scopes: ['email', 'profile']);
+  }
 
   void _signIn() async {
     try {
@@ -17,7 +29,7 @@ class _AppScreenState extends State<LoginGooglePage> {
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
+              print(GoogleSignInAuthentication);
       // final user = userCredential.user;
 
       // // Lưu vào bảng (Firestore)
