@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/features/auth/presentation/pages/method_login_page.dart';
 import 'package:my_app/features/auth/presentation/pages/login_page.dart';
 
 class AppRoutes {
@@ -8,8 +7,6 @@ class AppRoutes {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case methodLogin:
-        return MaterialPageRoute(builder: (_) => const MethodLoginPage());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginPage());
       default:
