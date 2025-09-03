@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:my_app/features/auth/presentation/pages/login_google_page.dart';
+import 'package:my_app/features/auth/presentation/pages/Login_Page.dart';
+import 'package:my_app/features/auth/dbService/supabase_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,6 +14,8 @@ class _RegisterPageState extends State<RegisterPage> {
    final _formKey = GlobalKey<FormState>();
   final _emailC = TextEditingController();
   final _passC = TextEditingController();
+  final _passcc = TextEditingController();
+  String errorMessage ="";
 
   bool _obscure = true;
   bool _remember = true;
@@ -22,24 +25,32 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _emailC.dispose();
     _passC.dispose();
+    _passcc.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    final user = _emailC.text.trim();
+    final pass = _passC.text.trim();
+    final passcc = _passcc.text.trim();
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
-
+    if(pass != passcc){
+      errorMessage = "mật khẩu xác nhận ko giống nhau";
+      return;
+    }
     setState(() => _loading = true);
-    // Giả lập gọi API
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Đăng nhập thành công${_remember ? " (đã ghi nhớ)" : ""}!'),
-      ),
-    );
+    final supabaseService = SupabaseService();
+    final addUser = await supabaseService.addUser(user,pass);
+    if (addUser){
+          setState(() => _loading = false);
+          Navigator.push( context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+    }else{
+        setState(() => _loading = false);
+        errorMessage = "Đăng kí tài khoản thất bại";
+    }
   }
 
   @override
@@ -107,6 +118,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           children: [
                             const Icon(Icons.lock_outline_rounded, size: 48),
                             const SizedBox(height: 12),
+                            if(errorMessage != "")
+                            Text(
+                              errorMessage,
+                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
                             Text(
                               'Chào mừng trở lại 👋',
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
@@ -137,9 +154,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               validator: (v) {
                                 final s = (v ?? '').trim();
                                 if (s.isEmpty) return 'Vui lòng nhập email';
-                                final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                                if (!emailRegex.hasMatch(s)) return 'Email không hợp lệ';
-                                return null;
                               },
                             ),
                             const SizedBox(height: 14),
@@ -160,13 +174,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                               TextFormField(
-                              controller: _passC,
+                              controller: _passcc,
                               obscureText: _obscure,
                               textInputAction: TextInputAction.done,
                               autofillHints: const [AutofillHints.password],
                               decoration: InputDecoration(
                                 labelText: 'Xác Nhận Mật khẩu',
-                                prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
+                                prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
                                   onPressed: () => setState(() => _obscure = !_obscure),
                                   icon: Icon(_obscure ? Icons.visibility_rounded : Icons.visibility_off_rounded),

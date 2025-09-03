@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/features/auth/dbService/supabase_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,7 +14,21 @@ class _HomePageState extends State<HomePage> {
   final List<String> sachNoi = ["Sách nói 1", "Sách nói 2", "Sách nói 3"];
   final List<String> sachDoc = ["Sách đọc A", "Sách đọc B", "Sách đọc C"];
   final List<String> yeuThich = ["Yêu thích X", "Yêu thích Y"];
+  final supabaseService = SupabaseService();
+  List<Map<String, dynamic>> titlebook = [];
+  @override
+  void initState() {
+    super.initState();
+    fetchSupabaseData();
+  }
 
+  void fetchSupabaseData() async {
+    final title = await supabaseService.gettitlebook();
+    setState(() {
+      titlebook = title;
+    });
+  }
+Map<String, dynamic> get firstBook => titlebook[0];
      @override
   Widget build(BuildContext context) {
 
@@ -87,7 +102,7 @@ Widget _buildtabButton(String text, int index){
         style: TextStyle(
           fontSize: 16,
           fontWeight: _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
-          color: _selectedIndex == index ? Colors.brown : Colors.grey,
+          color: _selectedIndex == index ? Colors.blue : Colors.grey,
         ),
       ),
     );
@@ -111,13 +126,20 @@ Widget _buildListContent(){
          SizedBox(
            height: 120,
            child: Container(
-             width: 100,
-              margin: EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(child: Text("sách A")),
+             width: 200,
+  height: 120,
+  decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          image: DecorationImage(
+          image: AssetImage('assets/images/toeic.PNG'),
+      fit: BoxFit.cover,
+      colorFilter: ColorFilter.mode(
+        Colors.blue.withOpacity(0.5),
+        BlendMode.darken,
+      ),
+    ),
+  ),
+              child: Center(child: Text(firstBook['namebook'])),
            ),
          ),
           // List ngang 1

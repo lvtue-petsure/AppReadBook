@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/presentation/pages/register_page.dart';
 import 'package:my_app/features/homepage/home_page.dart';
 import 'package:my_app/features/auth/presentation/pages/login_google_page.dart';
-import 'package:my_app/features/auth/dbService/db_service.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
 import 'dart:ui';
 
@@ -11,6 +10,7 @@ class LoginPage extends StatefulWidget {
 
   @override
   State<LoginPage> createState() => _LoginPageState();
+
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -111,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (errorMessage.isEmpty)
+                            if (errorMessage !=null)
                             Text(
                               errorMessage,
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Colors.red),
@@ -225,7 +225,7 @@ class _LoginPageState extends State<LoginPage> {
                                             MaterialPageRoute(builder: (context) => LoginGooglePage()),
                                           ),
                                     icon: const Icon(Icons.g_mobiledata_rounded, color: Colors.blue),
-                                    label: const Text('Google'),
+                                    label: const SelectableText('GOOGLE', style: TextStyle(color: Colors.white, fontSize: 10,  fontWeight: FontWeight.bold, )),
                                     style: OutlinedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -248,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
                                       MaterialPageRoute(builder: (context) => const RegisterPage()),
                                       );
                                     },
-                                    child: const Text('Đăng ký ngay'),
+                                    child: const SelectableText('Đăng ký ngay',selectionColor: Colors.white),
                                   ),
                                 ],
                               ),
