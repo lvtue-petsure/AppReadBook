@@ -36,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!ok) return;
     setState(() => _loading = true);
     final supabaseService = SupabaseService();
-    final login = await supabaseService.queryUser(user,pass);
+    final login = await supabaseService.loginUser(user,pass);
     if (login){
           setState(() => _loading = false);
           Navigator.push( context,

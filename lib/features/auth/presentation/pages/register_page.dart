@@ -36,12 +36,12 @@ class _RegisterPageState extends State<RegisterPage> {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
     if(pass != passcc){
-      errorMessage = "mật khẩu xác nhận ko giống nhau";
+      errorMessage = "Mật khẩu xác nhận ko giống nhau";
       return;
     }
     setState(() => _loading = true);
     final supabaseService = SupabaseService();
-    final addUser = await supabaseService.addUser(user,pass);
+    final addUser = await supabaseService.addUser(user,pass,1);
     if (addUser){
           setState(() => _loading = false);
           Navigator.push( context,
