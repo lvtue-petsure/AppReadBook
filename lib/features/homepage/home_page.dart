@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
+import 'package:my_app/features/homepage/bookDetail_page.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -40,8 +41,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void fetchSupabaseData() async {
-    final title = await supabaseService.getBookReadMost();
-    titlebook = title;
+    final bookReadMost = await supabaseService.getBookReadMost();
+     setState(() {
+    titlebook = bookReadMost;
+     });
+
   }
   @override
   Widget build(BuildContext context) {
@@ -174,6 +178,20 @@ class _HomePageState extends State<HomePage> {
         ),
         SizedBox(
           height: 120, // chiều cao thẻ
+           child: InkWell(
+    onTap: () {
+      // Khi bấm → chỉ truyền dữ liệu sang BookDetailPage
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookDetailPage(
+            title: "Sách TOEIC",      // chỉ hiện ở AppBar
+            content: "Nội dung sách ở đây…",  // hiển thị bên trong BookDetailPage
+            coverImage: "/images/toeic.PNG"
+          ),
+        ),
+      );
+    },
           child: Row(
             children: [
               Container(
@@ -194,12 +212,13 @@ class _HomePageState extends State<HomePage> {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  titlebook?['NameTitle'],
+                  titlebook?['nametitle'].toString()??"",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
+        ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
