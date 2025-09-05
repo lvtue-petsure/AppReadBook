@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
 
   void fetchSupabaseData() async {
     final bookReadMost = await supabaseService.getBookReadMost();
+    print( bookReadMost?['chaptertitle']);
      setState(() {
     titlebook = bookReadMost;
      });
@@ -185,8 +186,8 @@ class _HomePageState extends State<HomePage> {
         context,
         MaterialPageRoute(
           builder: (_) => BookDetailPage(
-            title: "Sách TOEIC",      // chỉ hiện ở AppBar
-            content: "Nội dung sách ở đây…",  // hiển thị bên trong BookDetailPage
+            title: titlebook?['chaptertitle'] ?? "",      // chỉ hiện ở AppBar
+            content: titlebook?['content'] ?? "",  // hiển thị bên trong BookDetailPage
             coverImage: "/images/toeic.PNG"
           ),
         ),
@@ -212,7 +213,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  titlebook?['nametitle'].toString()??"",
+                  "${titlebook?['nametitle'] ?? ""}\n${titlebook?['waching'] ?? ""}",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

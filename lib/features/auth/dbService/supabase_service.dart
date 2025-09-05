@@ -32,12 +32,12 @@ class SupabaseService {
 
  Future<Map<String, dynamic>?> getBookReadMost() async {
       try {
-      final response = await _client.from('titlebook')
-                                    .select()
-                                    .order('watching', ascending: false)
-                                    .limit(1)
-                                    .single();
-                                    print(response);
+      final response = await _client
+                            .from('titlebook')
+                            .select('*, chapter(*)') // select tất cả fields của titlebook + tất cả chapter liên quan
+                            .order('watching', ascending: false)
+                            .limit(1)
+                            .single();
       return response;
       } catch (e) {
         print("Lỗi query: $e");
