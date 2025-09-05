@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:my_app/features/model/chapter_model.dart';
 
 class BookDetailPage extends StatefulWidget {
   final String title;
-  final String content;
   final String coverImage;
+  final List<Chapter> chapters;
 
   const BookDetailPage({
     Key? key,
     required this.title,
-    required this.content,
     required this.coverImage,
+    required this.chapters,
   }) : super(key: key);
 
   @override
@@ -22,26 +23,12 @@ class _BookDetailPageState extends State<BookDetailPage> {
   bool isPlaying = false;
 
   late PageController _pageController;
-  late List<String> _pages;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-
-    // Tự động chia content thành nhiều trang
-    _pages = _splitContent(widget.content, 900); // 900 ký tự mỗi trang
-  }
-
-  List<String> _splitContent(String text, int chunkSize) {
-    List<String> chunks = [];
-    for (var i = 0; i < text.length; i += chunkSize) {
-      chunks.add(
-        text.substring(i, i + chunkSize > text.length ? text.length : i + chunkSize),
-      );
-    }
-    return chunks;
   }
 
   @override
@@ -58,7 +45,16 @@ class _BookDetailPageState extends State<BookDetailPage> {
         isPlaying = false;
       });
     } else {
-      await flutterTts.speak(widget.content);
+      // Thiết lập ngôn ngữ sang tiếng Việt
+    await flutterTts.setLanguage("vi-VN");
+    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setPitch(1.0);
+
+    // Kiểm tra ngôn ngữ có khả dụng không
+    List<dynamic> voices = await flutterTts.getVoices;
+    print("Available voices: $voices");
+      String allContent = widget.chapters.map((c) => c.content).join(" ");
+      await flutterTts.speak(allContent);
       setState(() {
         isPlaying = true;
       });
@@ -66,7 +62,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
   }
 
   void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < widget.chapters.length - 1) {
       _pageController.nextPage(
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -96,46 +92,58 @@ class _BookDetailPageState extends State<BookDetailPage> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(widget.coverImage), // ảnh từ assets
+              image: AssetImage(widget.coverImage),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.4), // làm mờ để chữ dễ đọc
+                Colors.white.withOpacity(0.4),
                 BlendMode.darken,
               ),
             ),
           ),
-        ),      
+        ),
       ),
       body: Column(
         children: [
           Expanded(
             child: PageView.builder(
               controller: _pageController,
-              itemCount: _pages.length,
+              itemCount: widget.chapters.length,
               onPageChanged: (index) {
                 setState(() {
                   _currentPage = index;
                 });
               },
               itemBuilder: (context, index) {
+                final chapter = widget.chapters[index];
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SingleChildScrollView(
-                    child: Text(
-                      _pages[index],
-                      style: TextStyle(
-                        fontSize: 18,
-                        height: 1.6,
-                        color: Colors.black87,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          chapter.chapterTitle,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          chapter.content,
+                          style: TextStyle(
+                            fontSize: 18,
+                            height: 1.6,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
           ),
-
-          // thanh điều hướng trang
           Container(
             color: Colors.grey[200],
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -148,7 +156,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                   label: Text("Trang trước"),
                 ),
                 Text(
-                  "${_currentPage + 1} / ${_pages.length}",
+                  "${_currentPage + 1} / ${widget.chapters.length}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 ElevatedButton.icon(
@@ -159,8 +167,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
               ],
             ),
           ),
-
-          // nút đọc sách
           SizedBox(
             width: double.infinity,
             height: 55,

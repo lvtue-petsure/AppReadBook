@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
 import 'package:my_app/features/homepage/bookDetail_page.dart';
+import 'package:my_app/features/model/chapter_model.dart';
 import 'dart:async';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +20,8 @@ class _HomePageState extends State<HomePage> {
   final List<String> yeuThich = ["Yêu thích X", "Yêu thích Y"];
   final supabaseService = SupabaseService();
   Map<String, dynamic>? titlebook;
+  List<Map<String, dynamic>>? topbook;
+  List<Map<String, dynamic>>? slidebook;
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final int _totalPages = 5; // số slide
@@ -38,16 +42,47 @@ class _HomePageState extends State<HomePage> {
       );
     });
     fetchSupabaseData();
+    fetchTopBooks();
   }
 
   void fetchSupabaseData() async {
     final bookReadMost = await supabaseService.getBookReadMost();
-    print( bookReadMost?['chaptertitle']);
-     setState(() {
-    titlebook = bookReadMost;
-     });
-
+    setState(() {
+      titlebook = bookReadMost;
+    });
   }
+
+  void fetchTopBooks() async {
+    final bookReadMost = await supabaseService.fetchTopBooks();
+    final slideReadMost = await supabaseService.fetchTopBooksSlide();
+    setState(() {
+      topbook = bookReadMost;
+      slidebook = slideReadMost;
+    });
+  }
+
+  void openBookDetail() {
+    if (titlebook == null) return;
+    try {
+      final firstChapter = (titlebook!['chapter'] as List<dynamic>?)?.first;
+      List<Chapter> chapter = (titlebook!['chapter'] as List)
+          .map((e) => Chapter.fromJson(e as Map<String, dynamic>))
+          .toList();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookDetailPage(
+            title: firstChapter?['chaptertitle'] ?? "",
+            coverImage: titlebook?['fileimage'] ?? "",
+            chapters: chapter,
+          ),
+        ),
+      );
+    } catch (e) {
+      print("Error TTS: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,7 +182,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
                     image: AssetImage(
-                      'assets/images/toeic.PNG',
+                      slidebook![index % slidebook!.length]["fileimage"]!??"",
                     ), // đổi ảnh theo slide
                     fit: BoxFit.cover,
                     colorFilter: ColorFilter.mode(
@@ -158,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Center(
                   child: Text(
-                    'Slide ${index + 1}',
+                    slidebook![index % slidebook!.length]["nametitle"]!??"",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -179,47 +214,35 @@ class _HomePageState extends State<HomePage> {
         ),
         SizedBox(
           height: 120, // chiều cao thẻ
-           child: InkWell(
-    onTap: () {
-      // Khi bấm → chỉ truyền dữ liệu sang BookDetailPage
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BookDetailPage(
-            title: titlebook?['chaptertitle'] ?? "",      // chỉ hiện ở AppBar
-            content: titlebook?['content'] ?? "",  // hiển thị bên trong BookDetailPage
-            coverImage: "/images/toeic.PNG"
-          ),
-        ),
-      );
-    },
-          child: Row(
-            children: [
-              Container(
-                width: 100, // width nhỏ, không full màn hình
-                margin: EdgeInsets.only(left: 8), // cách lề trái
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/toeic.PNG'),
-                    fit: BoxFit.cover,
-                    colorFilter: ColorFilter.mode(
-                      Colors.blue.withOpacity(0.5),
-                      BlendMode.darken,
+          child: InkWell(
+            onTap: openBookDetail,
+            child: Row(
+              children: [
+                Container(
+                  width: 100, // width nhỏ, không full màn hình
+                  margin: EdgeInsets.only(left: 8), // cách lề trái
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: AssetImage(titlebook?['fileimage'] ?? ""),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.blue.withOpacity(0.5),
+                        BlendMode.darken,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  "${titlebook?['nametitle'] ?? ""}\n${titlebook?['waching'] ?? ""}",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "${titlebook?['nametitle'] ?? ""}\n${titlebook?['watching'] ?? ""}",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -290,7 +313,14 @@ class _HomePageState extends State<HomePage> {
                 // Sau này bạn thêm code chọn PDF và convert ở đây
               },
               icon: Icon(Icons.picture_as_pdf),
-              label: Text("Convert PDF → Text", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),),
+              label: Text(
+                "Convert PDF → Text",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 shape: RoundedRectangleBorder(
