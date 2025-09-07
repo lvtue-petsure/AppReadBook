@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
 import 'package:my_app/features/homepage/bookDetail_page.dart';
+import 'package:my_app/features/homepage/category_book_view.dart';
+import 'package:my_app/features/homepage/favorites_page.dart';
+import 'package:my_app/features/homepage/pdf_conver_audio.dart';
+import 'package:my_app/features/homepage/user_profile_page.dart';
 import 'package:my_app/features/model/chapter_model.dart';
 import 'dart:async';
-import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,13 +18,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   // Dữ liệu demo
-  final List<String> sachNoi = ["Sách nói 1", "Sách nói 2", "Sách nói 3"];
-  final List<String> sachDoc = ["Sách đọc A", "Sách đọc B", "Sách đọc C"];
-  final List<String> yeuThich = ["Yêu thích X", "Yêu thích Y"];
   final supabaseService = SupabaseService();
   Map<String, dynamic>? titlebook;
   List<Map<String, dynamic>>? topbook;
   List<Map<String, dynamic>>? slidebook;
+  List<Map<String, dynamic>>? bookleast;
+  List<Map<String, dynamic>>? bookOlest;
+  bool isLoading = true; 
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final int _totalPages = 5; // số slide
@@ -53,28 +56,61 @@ class _HomePageState extends State<HomePage> {
   }
 
   void fetchTopBooks() async {
-    final bookReadMost = await supabaseService.fetchTopBooks();
-    final slideReadMost = await supabaseService.fetchTopBooksSlide();
-    setState(() {
-      topbook = bookReadMost;
-      slidebook = slideReadMost;
-    });
+    try {
+      final bookReadMost = await supabaseService.fetchTopBooks();
+      final slideReadMost = await supabaseService.fetchTopBooksSlide();
+      final fiveBooksleast = await supabaseService.fetchfiveBooksNew();
+      final fiveBooksOldes = await supabaseService.getFiveBookRead();
+      setState(() {
+        topbook = bookReadMost;
+        slidebook = slideReadMost;
+        bookleast = fiveBooksleast;
+        bookOlest = fiveBooksOldes;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error TTS: $e");
+    }
   }
 
-  void openBookDetail() {
-    if (titlebook == null) return;
+  void openBookDetail(Map<String, dynamic>? titleBook) {
+    if (titleBook == null) return;
     try {
-      final firstChapter = (titlebook!['chapter'] as List<dynamic>?)?.first;
-      List<Chapter> chapter = (titlebook!['chapter'] as List)
+      final firstChapter = (titleBook!['chapter'] as List<dynamic>?)?.first;
+      List<Chapter> chapter = (titleBook!['chapter'] as List)
           .map((e) => Chapter.fromJson(e as Map<String, dynamic>))
           .toList();
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => BookDetailPage(
+            bookId: firstChapter?['id'].toString() ?? "",
             title: firstChapter?['chaptertitle'] ?? "",
-            coverImage: titlebook?['fileimage'] ?? "",
+            coverImage: "assets/"+titleBook?['fileimage'] ?? "images/loading.png",
             chapters: chapter,
+          ),
+        ),
+      );
+    } catch (e) {
+      print("Error TTS: $e");
+    }
+  }
+
+  void openfvieBookleast(Map<String, dynamic>? book) {
+    if (bookleast == null) return;
+    try {
+      final chaptersJson = book!['chapter'] as List<dynamic>? ?? [];
+      final chapters = chaptersJson
+          .map((e) => Chapter.fromJson(e as Map<String, dynamic>))
+          .toList();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookDetailPage(
+            bookId: book?['id']!.toString() ?? "",
+            title: book?['nametitle'] ?? "",
+            coverImage:"assets/"+ book?['fileimage'] ?? "images/loading.png",
+            chapters: chapters,
           ),
         ),
       );
@@ -114,15 +150,22 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.all(12),
                 backgroundColor: Colors.grey,
               ),
-              onPressed: () {
-                print("Đăng xuất");
+              onPressed: () async  {
+                Navigator.push(context,MaterialPageRoute(
+                  builder: (_) => UserProfilePage(),
+                ),
+              );
               },
               child: Icon(Icons.person, color: Colors.white),
             ),
           ],
         ),
       ),
-      body: Padding(
+      body: isLoading
+          ? Center(
+              child: CircularProgressIndicator(), 
+            )
+          :Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -132,7 +175,7 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(width: 12),
                 _buildtabButton("Thể loại sách", 1),
                 SizedBox(width: 12),
-                _buildtabButton("danh sách yêu thích", 2),
+                _buildtabButton("Danh sách yêu thích", 2),
               ],
             ),
             Expanded(child: _buildListContent()),
@@ -161,13 +204,14 @@ class _HomePageState extends State<HomePage> {
   Widget _buildListContent() {
     List<String> items;
     if (_selectedIndex == 0) {
-      items = sachNoi;
+      return _buildhomePage();
     } else if (_selectedIndex == 1) {
-      items = sachDoc;
+        return const CategoryBookView();
     } else {
-      items = yeuThich;
+        return const FavoritesPage();
     }
-
+  }
+  Widget _buildhomePage(){
     return ListView(
       children: [
         SizedBox(
@@ -182,7 +226,8 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
                     image: AssetImage(
-                      slidebook![index % slidebook!.length]["fileimage"]!??"",
+                      "assets/"+slidebook?[index % 3]["fileimage"] ??
+                          "images/loading.png",
                     ), // đổi ảnh theo slide
                     fit: BoxFit.cover,
                     colorFilter: ColorFilter.mode(
@@ -193,7 +238,9 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Center(
                   child: Text(
-                    slidebook![index % slidebook!.length]["nametitle"]!??"",
+                    (slidebook != null && slidebook!.isNotEmpty)
+                        ? slidebook![index % 3]["nametitle"]! ?? ""
+                        : "",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -215,7 +262,9 @@ class _HomePageState extends State<HomePage> {
         SizedBox(
           height: 120, // chiều cao thẻ
           child: InkWell(
-            onTap: openBookDetail,
+            onTap:() {
+                  openBookDetail(titlebook);
+                },
             child: Row(
               children: [
                 Container(
@@ -224,7 +273,9 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     image: DecorationImage(
-                      image: AssetImage(titlebook?['fileimage'] ?? ""),
+                      image: AssetImage(
+                       "assets/"+ titlebook?['fileimage'] ?? "images/loading.png",
+                      ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
                         Colors.blue.withOpacity(0.5),
@@ -252,19 +303,54 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(
-          height: 120,
+          height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: items.length,
+            itemCount:5, // dùng length của list data
             itemBuilder: (context, index) {
-              return Container(
-                width: 100,
-                margin: EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.blue[100 * ((index % 8) + 1)],
-                  borderRadius: BorderRadius.circular(12),
+              final book = bookOlest![index]; // lấy 1 object sách
+
+              return GestureDetector(
+                onTap: () {
+                  openfvieBookleast(book);
+                },
+                child: Container(
+                  width: 120,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: AssetImage(
+                        (book != null && book!.isNotEmpty)
+                            ? "assets/"+book!['fileimage'] ?? ""
+                            : "",
+                      ),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.3), // làm tối ảnh để chữ nổi
+                        BlendMode.darken,
+                      ),
+                    ),
+                  ),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Text(
+                        (book != null && book!.isNotEmpty)
+                            ? book!['nametitle'] ?? ""
+                            : "",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Center(child: Text(items[index])),
               );
             },
           ),
@@ -278,27 +364,63 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(
-          height: 120,
+          height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: 8,
+            itemCount:5, // dùng length của list data
             itemBuilder: (context, index) {
-              return Container(
-                width: 120,
-                margin: EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: Colors.green[100 * ((index % 8) + 1)],
-                  borderRadius: BorderRadius.circular(12),
+              final book = bookleast![index]; // lấy 1 object sách
+
+              return GestureDetector(
+                onTap: () {
+                  openfvieBookleast(book);
+                },
+                child: Container(
+                  width: 120,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: AssetImage(
+                        (book != null && book!.isNotEmpty)
+                            ?"assets/"+ book!['fileimage'] ?? ""
+                            : "",
+                      ),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.3), // làm tối ảnh để chữ nổi
+                        BlendMode.darken,
+                      ),
+                    ),
+                  ),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Text(
+                        (book != null && book!.isNotEmpty)
+                            ? book!['nametitle'] ?? ""
+                            : "",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Center(child: Text("Item $index")),
               );
             },
           ),
         ),
+
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            "Chuyễn văn bản thành audio",
+            "Chuyễn văn bản thành Audio",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
@@ -309,12 +431,17 @@ class _HomePageState extends State<HomePage> {
             height: 60, // chiều cao cố định
             child: ElevatedButton.icon(
               onPressed: () {
-                print("Nhấn vào nút Convert PDF → Text");
-                // Sau này bạn thêm code chọn PDF và convert ở đây
+                
+                Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PdfToSpeechPage(),
+        ),
+      );
               },
               icon: Icon(Icons.picture_as_pdf),
               label: Text(
-                "Convert PDF → Text",
+                "Convert PDF → Audio",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -334,3 +461,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+ 

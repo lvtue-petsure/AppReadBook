@@ -38,10 +38,10 @@ class _LoginPageState extends State<LoginPage> {
     final supabaseService = SupabaseService();
     final login = await supabaseService.loginUser(user,pass);
     if (login){
-          setState(() => _loading = false);
-          Navigator.push( context,
-            MaterialPageRoute(builder: (context) => HomePage()),
-          );
+      setState(() => _loading = false);
+      Navigator.push( context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     }else{
         setState(() => _loading = false);
         errorMessage = "Sai tài khoản hoặc mật khẩu";
@@ -108,8 +108,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: Form(
                         key: _formKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                        child: SingleChildScrollView(
+                         child:  Column(
                           children: [
                             if (errorMessage !=null)
                             Text(
@@ -256,6 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                       ),
+                      ),
                     ),
                   ),
                 ),
@@ -275,6 +276,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
+          
         ],
       ),
     );

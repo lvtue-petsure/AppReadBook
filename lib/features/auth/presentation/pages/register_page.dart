@@ -211,7 +211,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         width: 22,
                                         child: CircularProgressIndicator(strokeWidth: 2),
                                       )
-                                    : const Text('Đăng nhập'),
+                                    : const Text('Đăng Kí'),
                               ),
                             ),
                           ],

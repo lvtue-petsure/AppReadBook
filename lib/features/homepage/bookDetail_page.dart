@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:my_app/features/model/chapter_model.dart';
+import 'package:my_app/features/auth/dbService/supabase_service.dart';
 
 class BookDetailPage extends StatefulWidget {
   final String title;
+  final String bookId;
   final String coverImage;
   final List<Chapter> chapters;
 
   const BookDetailPage({
     Key? key,
+    required this.bookId,
     required this.title,
     required this.coverImage,
     required this.chapters,
@@ -20,16 +23,49 @@ class BookDetailPage extends StatefulWidget {
 
 class _BookDetailPageState extends State<BookDetailPage> {
   final FlutterTts flutterTts = FlutterTts();
+  final supabaseService = SupabaseService();
   bool isPlaying = false;
-
+  bool isFavorite = false;
   late PageController _pageController;
   int _currentPage = 0;
+  String? _userID;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _getUser();
   }
+void _getUser() async {
+    var userId = await supabaseService.getUsername();
+  setState(() {
+    _userID = userId;
+  });
+  _checkFavoriteStatus();
+}
+
+// Kiểm tra xem sách đã được yêu thích chưa
+void _checkFavoriteStatus() async {
+  bool fav = await supabaseService.checkFavorite(_userID??"0", widget.bookId);
+  setState(() {
+    isFavorite = fav;
+  });
+}
+
+void _toggleFavorite() async {
+  setState(() {
+    isFavorite = !isFavorite;
+  });
+
+  if (isFavorite) {
+    // thêm vào bảng favorites
+    await supabaseService.addFavorite(_userID??"0", widget.bookId);
+  } else {
+    // xóa khỏi bảng favorites
+    await supabaseService.removeFavorite(_userID??"0", widget.bookId);
+  }
+}
+
 
   @override
   void dispose() {
@@ -46,20 +82,35 @@ class _BookDetailPageState extends State<BookDetailPage> {
       });
     } else {
       // Thiết lập ngôn ngữ sang tiếng Việt
+    await flutterTts.setEngine("com.google.android.tts");
+    await flutterTts.awaitSpeakCompletion(true);
     await flutterTts.setLanguage("vi-VN");
     await flutterTts.setSpeechRate(0.5);
     await flutterTts.setPitch(1.0);
 
-    // Kiểm tra ngôn ngữ có khả dụng không
-    List<dynamic> voices = await flutterTts.getVoices;
-    print("Available voices: $voices");
       String allContent = widget.chapters.map((c) => c.content).join(" ");
-      await flutterTts.speak(allContent);
+     speakLongText(allContent);
       setState(() {
         isPlaying = true;
       });
     }
   }
+  
+  Future<void> speakLongText(String text) async {
+  final chunks = text.split(RegExp(r'(?<=\.)')); // cắt theo dấu chấm
+  for (var chunk in chunks) {
+    final clean = chunk.trim();
+    if (clean.isNotEmpty) {
+      await flutterTts.speak(clean);
+      await Future.delayed(const Duration(seconds: 1)); 
+      if(!isPlaying){
+      await flutterTts.stop();
+      break;
+      }
+    }
+  }
+  }
+
 
   void _nextPage() {
     if (_currentPage < widget.chapters.length - 1) {
@@ -85,7 +136,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       appBar: AppBar(
         title: Text(
           widget.title,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20,color: Colors.white),
         ),
         centerTitle: true,
         elevation: 0,
@@ -167,31 +218,55 @@ class _BookDetailPageState extends State<BookDetailPage> {
               ],
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: ElevatedButton.icon(
-              onPressed: _toggleAudio,
-              icon: Icon(
-                isPlaying ? Icons.pause_circle_filled : Icons.volume_up_rounded,
-                size: 28,
-              ),
-              label: Text(
-                isPlaying ? "Dừng đọc" : "Nghe sách",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 3,
-              ),
-            ),
+          Container(
+  padding: EdgeInsets.all(16),
+  color: Colors.white,
+  child: Row(
+    children: [
+      Expanded(
+        child: ElevatedButton.icon(
+          onPressed: _toggleAudio,
+          icon: Icon(
+            isPlaying ? Icons.pause_circle_filled : Icons.volume_up_rounded,
+            size: 28,
           ),
+          label: Text(
+            isPlaying ? "Dừng đọc" : "Nghe sách",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            elevation: 3,
+          ),
+        ),
+      ),
+      SizedBox(width: 12),
+      Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.3),
+          shape: BoxShape.circle,
+        ),
+        child: GestureDetector(
+          onTap: _toggleFavorite,
+          child: Icon(
+            isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: Colors.red,
+            size: 28,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     );
   }
 }
+
+

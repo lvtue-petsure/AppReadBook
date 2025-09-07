@@ -3,15 +3,10 @@ import 'routes/app_routes.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
     WidgetsFlutterBinding.ensureInitialized();
-try {
    await Supabase.initialize (
     url: 'https://xbyabttdnhlfjbtjpvjq.supabase.co', // lấy trong Supabase dashboard
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhieWFidHRkbmhsZmpidGpwdmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NjUwMzUsImV4cCI6MjA3MjQ0MTAzNX0.WWDvYbbJJiSS427VB4bvbRtvfF-uAHoCy4w6cewMveI', 
-  );
-    print("✅ Supabase initialized thành công!");
-  } catch (e) {
-    print("❌ Lỗi khi initialize Supabase: $e");
-  }
+   );
   runApp(const MyApp());
 }
 
