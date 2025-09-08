@@ -225,6 +225,32 @@ class SupabaseService {
     return data.isNotEmpty;
   }
 
+  Future<List<Map<String, dynamic>>> searchBooks(String searchQuery) async {
+    try{
+    final response = await _client
+        .from('titlebook')
+        .select('''
+        id,
+        nametitle,
+        watching,
+        fileimage,
+        chapter (
+          id,
+          chapternumber,
+          chaptertitle,
+          content
+        )
+      ''')
+        .ilike('nametitle',  "%$searchQuery%");
+        print(response);
+    if (response.isEmpty) return [];
+    return response;
+    }catch(e){
+      print("Lỗi query: $e");
+      return [];
+    }
+  }
+
   // Lưu username
   Future<void> saveUsername(String userId) async {
     final prefs = await SharedPreferences.getInstance();

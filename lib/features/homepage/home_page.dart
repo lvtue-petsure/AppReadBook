@@ -5,6 +5,7 @@ import 'package:my_app/features/homepage/category_book_view.dart';
 import 'package:my_app/features/homepage/favorites_page.dart';
 import 'package:my_app/features/homepage/pdf_conver_audio.dart';
 import 'package:my_app/features/homepage/user_profile_page.dart';
+import 'package:my_app/features/homepage/search_page.dart';
 import 'package:my_app/features/model/chapter_model.dart';
 import 'dart:async';
 
@@ -139,7 +140,16 @@ class _HomePageState extends State<HomePage> {
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 14),
                   ),
-                ),
+                textInputAction: TextInputAction.search, 
+                onSubmitted: (value) {
+                  Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SearchPage(searchQuery: value??""),
+                                ),
+                          );
+                  },
+                ),    
               ),
             ),
             SizedBox(width: 12), // khoảng cách giữa search và logout
@@ -388,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
-                        Colors.black.withOpacity(0.3), // làm tối ảnh để chữ nổi
+                        Colors.black.withOpacity(0.3),
                         BlendMode.darken,
                       ),
                     ),
