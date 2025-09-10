@@ -67,20 +67,19 @@ class SupabaseService {
     }
   }
 
-  Future<Map<String, dynamic>?> getFiveBookReadMost() async {
+  Future<List<Map<String, dynamic>>> getFiveBookReadMost() async {
     try {
       final response = await _client
           .from('titlebook')
           .select(
             'id, nametitle, watching,fileimage, chapter(id, chapternumber, chaptertitle, content)',
           )
-          .order('watching', ascending: true)
-          .limit(5)
-          .maybeSingle();
+          .order('watching', ascending: false)
+          .limit(5);
       return response;
     } catch (e) {
       print("Lỗi query: $e");
-      return null;
+      return [];
     }
   }
 

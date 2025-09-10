@@ -60,8 +60,8 @@ class _HomePageState extends State<HomePage> {
     try {
       final bookReadMost = await supabaseService.fetchTopBooks();
       final slideReadMost = await supabaseService.fetchTopBooksSlide();
-      final fiveBooksleast = await supabaseService.fetchfiveBooksNew();
-      final fiveBooksOldes = await supabaseService.getFiveBookRead();
+      final fiveBooksleast = await supabaseService.getFiveBookRead();
+      final fiveBooksOldes = await supabaseService.getFiveBookReadMost();
       setState(() {
         topbook = bookReadMost;
         slidebook = slideReadMost;
@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
         context,
         MaterialPageRoute(
           builder: (_) => BookDetailPage(
-            bookId: firstChapter?['id'].toString() ?? "",
+            bookId: titleBook?['id'].toString() ?? "",
             title: firstChapter?['chaptertitle'] ?? "",
             coverImage: "assets/"+titleBook?['fileimage'] ?? "images/loading.png",
             chapters: chapter,
@@ -214,6 +214,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildListContent() {
     List<String> items;
     if (_selectedIndex == 0) {
+        fetchSupabaseData();
+        fetchTopBooks();
       return _buildhomePage();
     } else if (_selectedIndex == 1) {
         return const CategoryBookView();

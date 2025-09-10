@@ -56,7 +56,6 @@ void _toggleFavorite() async {
   setState(() {
     isFavorite = !isFavorite;
   });
-
   if (isFavorite) {
     // thêm vào bảng favorites
     await supabaseService.addFavorite(_userID??"0", widget.bookId);
