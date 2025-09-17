@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/presentation/pages/Login_Page.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 class UserProfilePage extends StatefulWidget {
 
   const UserProfilePage({super.key});
@@ -13,6 +14,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   bool isLoading = true;
   final supabaseService = SupabaseService();
   String? _userID;
+  GoogleSignInAccount? _usergoogle;
   Map<String, dynamic>? user;
   @override
   void initState() {
@@ -27,6 +29,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     print(_userID);
     loadUser();
   }
+  
   Future<void> loadUser() async {
     final fetchedUser = await supabaseService.getUser(_userID??"0");
 
@@ -46,6 +49,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final GoogleSignInAccount? user123 = ModalRoute.of(context)!.settings.arguments as GoogleSignInAccount?;
+    print(user123);
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),

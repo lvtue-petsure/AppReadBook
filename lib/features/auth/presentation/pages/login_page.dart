@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/features/auth/presentation/pages/register_page.dart';
-import 'package:my_app/features/homepage/home_page.dart';
 import 'package:my_app/features/auth/presentation/pages/login_google_page.dart';
 import 'package:my_app/features/auth/dbService/supabase_service.dart';
 import 'dart:ui';
