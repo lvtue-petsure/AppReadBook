@@ -39,9 +39,11 @@ class _LoginPageState extends State<LoginPage> {
     final login = await supabaseService.loginUser(user,pass);
     if (login){
       setState(() => _loading = false);
-      Navigator.push( context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
+       Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/home',       // route tới HomePage
+      (route) => false, // xóa toàn bộ các route trước đó (kể cả login)
+    );
     }else{
         setState(() => _loading = false);
         errorMessage = "Sai tài khoản hoặc mật khẩu";

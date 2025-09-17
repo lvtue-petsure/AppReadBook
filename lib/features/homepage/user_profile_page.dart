@@ -37,7 +37,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> logOut() async {
- var userId = await supabaseService.logout();
+    var userId = await supabaseService.logout();
                 Navigator.push(context,MaterialPageRoute(
                   builder: (_) => LoginPage(),
                 ),
