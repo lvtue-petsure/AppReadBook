@@ -250,7 +250,7 @@ class _LoginPageState extends State<LoginPage> {
                                       MaterialPageRoute(builder: (context) => const RegisterPage()),
                                       );
                                     },
-                                    child: const Text('Đăng ký ngay',style: TextStyle(color: Colors.while),
+                                    child: const Text('Đăng ký ngay',style: TextStyle(color: Colors.while)),
                                     ),
                                   ),
                                 ],
