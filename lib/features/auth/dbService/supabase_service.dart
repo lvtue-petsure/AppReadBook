@@ -83,17 +83,7 @@ class SupabaseService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchTopBooks() async {
-    try {
-      final response = await _client
-          .from('top1_books_per_category')
-          .select('*');
-      return List<Map<String, dynamic>>.from(response as List);
-    } catch (e) {
-      print("Lỗi query: $e");
-      return [];
-    }
-  }
+
 
   Future<List<Map<String, dynamic>>> fetchTopBooksSlide() async {
     try {

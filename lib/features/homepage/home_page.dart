@@ -58,12 +58,10 @@ class _HomePageState extends State<HomePage> {
 
   void fetchTopBooks() async {
     try {
-      final bookReadMost = await supabaseService.fetchTopBooks();
       final slideReadMost = await supabaseService.fetchTopBooksSlide();
       final fiveBooksleast = await supabaseService.getFiveBookRead();
       final fiveBooksOldes = await supabaseService.getFiveBookReadMost();
       setState(() {
-        topbook = bookReadMost;
         slidebook = slideReadMost;
         bookleast = fiveBooksleast;
         bookOlest = fiveBooksOldes;
