@@ -265,7 +265,7 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            "sách nghe nhiều nhất",
+            "Sách nghe nhiều nhất",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
@@ -369,7 +369,7 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            "top sách nghe mới cập nhật",
+            "Top sách nghe mới cập nhật",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
@@ -437,35 +437,50 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: SizedBox(
-            width: 200, // chiều ngang cố định
-            height: 60, // chiều cao cố định
-            child: ElevatedButton.icon(
-              onPressed: () {
-                
-                Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PdfToSpeechPage(),
+  width: 240,
+  height: 65,
+  child: DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.blueAccent, Colors.purpleAccent],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.purple.withOpacity(0.3),
+          blurRadius: 12,
+          offset: Offset(0, 6),
         ),
-      );
-              },
-              icon: Icon(Icons.picture_as_pdf),
-              label: Text(
-                "Convert PDF → Audio",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
+      ],
+    ),
+    child: ElevatedButton.icon(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PdfToSpeechPage()),
+        );
+      },
+      icon: Icon(Icons.graphic_eq, size: 28, color: Colors.white),
+      label: Text(
+        "Convert PDF → Audio",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent, // để gradient hiển thị
+        shadowColor: Colors.transparent,     // bỏ shadow mặc định
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    ),
+  ),
+),
         ),
       ],
     );
